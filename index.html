@@ -3,22 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Digital</title>
+    <title>Campus Digital - Dashboard de Formation</title>
     <style>
-        body { background: #1a1c24; color: white; font-family: sans-serif; text-align: center; padding: 50px 20px; }
-        .card { background: #23272e; padding: 30px; border-radius: 20px; border: 1px solid #3f4455; max-width: 400px; margin: auto; }
-        img { width: 150px; border-radius: 50%; border: 3px solid #5865F2; }
-        h1 { margin: 20px 0 10px; font-size: 24px; }
-        .btn { display: inline-block; background: #5865F2; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+        :root {
+            --bg: #1a1c24;
+            --surface: #23272e;
+            --accent: #5865F2;
+            --text: #ffffff;
+            --text-muted: #949ba4;
+            --radius: 12px;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            background-color: var(--surface);
+            border-radius: var(--radius);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #3f4455;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .logo-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            padding: 5px;
+            background: white;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.3);
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+
+        .motto {
+            font-size: 14px;
+            color: #f7b731; /* Doré comme dans le logo */
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        /* Barre de Progression */
+        .progress-section {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #000;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Liste de Tâches */
+        .task-list {
+            text-align: left;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background-color: rgba(0,0,0,0.15);
+            margin-top: 6px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .task-item:hover {
+            border-color: var(--accent);
+        }
+
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--accent);
+            border-radius: 4px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .task-item.done .checkbox {
+            background-color: var(--accent);
+        }
+
+        .task-item.done .checkbox::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            left: 3px;
+            top: -2px;
+            font-size: 14px;
+        }
+
+        .task-item.done span {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
     </style>
 </head>
 <body>
-    <div class="card">
-        <img src="https://i.postimg.cc/8PzL7GfL/image.png" alt="Logo">
+
+    <div class="dashboard-container">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo L'échec est un diplôme">
+        </div>
+        
         <h1>CAMPUS DIGITAL</h1>
-        <p>"L'échec est un diplôme"</p>
-        <a href="#" class="btn">Démarrer mon suivi</a>
+        <div class="motto">"L'échec est un diplôme"</div>
+
+        <div class="progress-section">
+            <div class="progress-header">
+                <span>Ma Progression IP</span>
+                <span id="progPct">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progFill"></div>
+            </div>
+        </div>
+
+        <div class="task-list" id="taskList">
+            </div>
     </div>
+
+    <script>
+        // --- DONNÉES DU PLAN DE FORMATION ---
+        const initialTasks = [
+            { id: 't1', title: 'Comprendre l\'Analyse du besoin (ADDIE)', xp: 50 },
+            { id: 't2', title: 'Rédiger des Objectifs selon Bloom', xp: 50 },
+            { id: 't3', title: 'Créer un Storyboard sur Genially', xp: 100 },
+            { id: 't4', title: 'Concevoir l\'Évaluation Somative', xp: 75 }
+        ];
+
+        // --- GESTION DE L'ÉTAT (Sauvegarde Locale) ---
+        let completedTaskIds = JSON.parse(localStorage.getItem('cd_progress')) || [];
+
+        // --- FONCTIONS DE DESSIN ---
+        function render() {
+            // Dessiner les tâches
+            const listContainer = document.getElementById('taskList');
+            listContainer.innerHTML = ''; // Vider avant de redessiner
+
+            initialTasks.forEach(task => {
+                const isDone = completedTaskIds.includes(task.id);
+                
+                const taskElement = document.createElement('div');
+                taskElement.className = `task-item ${isDone ? 'done' : ''}`;
+                taskElement.onclick = () => toggleTask(task.id);
+
+                taskElement.innerHTML = `
+                    <div class="checkbox"></div>
+                    <span>${task.title}</span>
+                `;
+
+                listContainer.appendChild(taskElement);
+            });
+
+            // Mettre à jour la barre de progression
+            const pct = initialTasks.length > 0 
+                ? Math.round((completedTaskIds.length / initialTasks.length) * 100) 
+                : 0;
+            
+            document.getElementById('progPct').innerText = pct + '%';
+            document.getElementById('progFill').style.width = pct + '%';
+        }
+
+        function toggleTask(taskId) {
+            const index = completedTaskIds.indexOf(taskId);
+            
+            if (index > -1) {
+                // Tâche déjà faite, on la décoche
+                completedTaskIds.splice(index, 1);
+            } else {
+                // Tâche non faite, on la coche
+                completedTaskIds.push(taskId);
+            }
+
+            // Sauvegarder dans le navigateur
+            localStorage.setItem('cd_progress', JSON.stringify(completedTaskIds));
+            
+            // Redessiner
+            render();
+        }
+
+        // --- DÉMARRAGE ---
+        render(); // Premier dessin au chargement
+    </script>
 </body>
 </html>
-
